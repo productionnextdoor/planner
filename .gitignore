@@ -1,4 +1,5 @@
 .vscode
+.idea
 jsonFiles
 planner_venv
 planner.code-workspace

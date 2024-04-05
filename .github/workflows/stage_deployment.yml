@@ -1,0 +1,76 @@
+name: STAGE Deployment
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'requirements.txt'
+    branches:
+      - 'stage'
+  workflow_dispatch:
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    environment: stage
+
+    steps:
+      - name: Slack notifying on start
+        uses: pmagentur/pm_slack_notifier@v0.2
+        env:
+          SLACK_CHANNEL: 'proj-hsu-platform-build'
+          SLACK_COLOR: '#FFA500'
+          SLACK_ICON: https://avatars1.githubusercontent.com/u/63812035?s=200&v=4
+          SLACK_MESSAGE: 'Deployment to STAGE is started'
+          SLACK_TITLE: 'Deployment to STAGE'
+          SLACK_USERNAME: "PM's whisperer"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Checking out the repo
+        uses: actions/checkout@v2
+
+      - name: Building PM Docker Image
+        uses: pmagentur/pm_docker_builder@v0.2
+        env:
+          USERNAME: ${{ secrets.DOCKER_USER }}
+          PASSWORD: ${{ secrets.DOCKER_PASS }}
+          REGISTRY: pmdocker.azurecr.io
+          REPOSITORY: 'pm-hsu-planner'
+          TAG: 'stage'
+          DOCKERFILE_PATH: '.'
+          DOCKERFILE: './Dockerfile.flask'
+          CREATE_BACKUP: 'True'
+
+  failure:
+    needs: [build]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack notifying on error
+        uses: pmagentur/pm_slack_notifier@v0.2
+        env:
+          SLACK_CHANNEL: 'proj-hsu-platform-build'
+          SLACK_COLOR: '#FF0000'
+          SLACK_ICON: https://avatars1.githubusercontent.com/u/63812035?s=200&v=4
+          SLACK_MESSAGE: 'Deployment failed :x:'
+          SLACK_TITLE: 'Deployment to STAGE'
+          SLACK_USERNAME: "PM's whisperer"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  successed:
+    needs: [build]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack notifying on success
+        uses: pmagentur/pm_slack_notifier@v0.2
+        env:
+          SLACK_CHANNEL: 'proj-hsu-platform-build'
+          SLACK_COLOR: '#006400'
+          SLACK_ICON: https://avatars1.githubusercontent.com/u/63812035?s=200&v=4
+          SLACK_MESSAGE: 'Successfully deployed :white_check_mark:'
+          SLACK_TITLE: 'Deployment to STAGE'
+          SLACK_USERNAME: "PM's whisperer"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  main-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - BASE_FOLDER=/dev/shm #storage location, tmpfs or in-memory 
+      - PERSIST_FOLDERS=no # care when True and BASE_FOLDER is in tmpfs, in-memory disallowed
