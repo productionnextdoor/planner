@@ -39,7 +39,7 @@ if "/dev/shm" in BASE_FOLDER and PERSIST_FOLDERS:
     sys.exit(4)
 
 
-def run_task_and_release_semaphore(callback_url, input_data, output_param):
+def run_task_and_release_semaphore(callback_url, input_data, output_param, max_cost):
     global RUNNING_TASKS_COUNT
     try:
         with running_tasks_lock:
@@ -56,7 +56,7 @@ def run_task_and_release_semaphore(callback_url, input_data, output_param):
             input_file_path = os.path.join(inputs_dir, "input.json")
             with open(input_file_path, 'w', encoding="utf-8") as input_file:
                 json.dump(input_data, input_file)
-            command = ["python", "/usr/src/app/src/main.py", "--input", "input.json", "--output", output_param]
+            command = ["python", "/usr/src/app/src/main.py", "--input", "input.json", "--output", output_param, "--max-cost", str(max_cost)]
 
             # run command inside temp dir
             process = subprocess.Popen(command, cwd=temp_dir)
@@ -105,11 +105,14 @@ def trigger_task():
     if not VALID_FILENAME_REGEX.match(output_param):
         return jsonify({"error": "Invalid input for 'outputParam'. Only letters, digits, underscores, periods, and dashes are allowed."}), 400
 
+    # Default to empty string if not provided
+    max_cost = data.get('maxCost', -1)
+
     if semaphore.acquire(blocking=False):
         # Start a background thread, pass both callback_url and input json and output pattern
         # ToDO: if callback_url cannot be unique, require and add UUID here from payload
         threading.Thread(target=run_task_and_release_semaphore, args=(
-            callback_url, input_json_data, output_param)).start()
+            callback_url, input_json_data, output_param, max_cost)).start()
         return jsonify({"message": "Task started"}), 202
     else:
         with running_tasks_lock:
