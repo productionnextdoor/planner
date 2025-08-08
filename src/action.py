@@ -15,7 +15,7 @@ class Action:
         self.workingTimeInHours = workingTimeInHours
         self.objectives = {}
 
-        # These attributes are helpful for the post-processing (schduling after planning)
+        # These attributes are helpful for the post-processing (schduling after planning )
         self.onlyInitialStates = True
         for precon in self.preconditions:
             if not precon['state_object'].isStartState:
