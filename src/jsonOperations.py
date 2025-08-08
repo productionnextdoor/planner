@@ -74,7 +74,7 @@ def writeToJson(sortedPlans, outputFileName, optCriteria):
    else:
       data = {"optimizeFor": optCriteria, "minimumPlan":sortedPlans[0].getPlanValue(), "minimumPlan":sortedPlans[-1].getPlanValue()}
       data["numberOfPlans"] = len(sortedPlans)
-      plans_list = [] # list of dictionaries (plans)
+      plans_list = [] # list of dictionaries ( plans )
       for plan in sortedPlans:
          plans_list.append(plan.getDictInfo())
       data["plans"] = plans_list
