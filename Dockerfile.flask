@@ -1,0 +1,15 @@
+FROM python:3.12-slim
+
+WORKDIR /usr/src/app/
+
+COPY ./src ./src
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+##CMD ["sleep", "infinity"]
+#ENTRYPOINT ["python", "src/main.py"]
+#CMD ["--help"] 
+
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "--log-level", "info", "src.planner_flask:app"]
